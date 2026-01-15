@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting-Diät Rechner | prosma</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --prosma-yellow: #FFE632;
+            --prosma-turquoise: #23D2C8;
+            --prosma-black: #000000;
+            --prosma-white: #FFFFFF;
+            --playful-red: #FF4B50;
+            --playful-purple: #5A2396;
+            --playful-orange: #FFC45E;
+            --soft-yellow: #FFFAA5;
+            --soft-rose: #FFB4AA;
+            --soft-turquoise: #91E8E2;
+            --dark-grey: #232323;
+            --soft-grey: #F5F5FA;
+            --font-main: 'Rubik', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--soft-grey);
+            color: var(--prosma-black);
+            min-height: 100vh;
+            line-height: 1.2;
+            overflow-x: hidden;
+        }
+
+        .core-elements { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .core-el { position: absolute; }
+        .ce-diamond { width: 24px; height: 24px; background: var(--prosma-yellow); transform: rotate(45deg); }
+        .ce-circle-filled { width: 16px; height: 16px; background: var(--prosma-turquoise); border-radius: 50%; }
+        .ce-triangle-filled { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-bottom: 24px solid var(--prosma-yellow); }
+        .ce-square-outline { width: 20px; height: 20px; border: 2px solid var(--prosma-turquoise); }
+        .ce-circle-outline { width: 18px; height: 18px; border: 2px solid var(--prosma-yellow); border-radius: 50%; }
+        .ce-dots { display: grid; grid-template-columns: repeat(3, 6px); gap: 6px; }
+        .ce-dots span { width: 6px; height: 6px; background: var(--prosma-black); border-radius: 50%; opacity: 0.15; }
+        .ce-1 { top: 8%; left: 4%; } .ce-2 { top: 15%; right: 8%; } .ce-3 { top: 35%; left: 2%; }
+        .ce-4 { top: 50%; right: 3%; } .ce-5 { bottom: 30%; left: 6%; } .ce-6 { bottom: 15%; right: 5%; }
+        .ce-7 { top: 25%; right: 15%; } .ce-8 { bottom: 40%; right: 10%; }
+
+        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 24px; min-height: 100vh; }
+
+        header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+        .logo { pointer-events: auto; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .logo-hexagon { width: 36px; height: 36px; }
+        .logo-text { font-size: 1.4rem; font-weight: 800; color: var(--prosma-black); letter-spacing: -0.5px; }
+        .header-cta { pointer-events: auto; display: none; align-items: center; gap: 8px; padding: 14px 24px; background: var(--prosma-turquoise); border: 3px solid var(--prosma-black); box-shadow: 3px 3px 0 var(--prosma-black); font-size: 0.85rem; font-weight: 700; color: var(--prosma-black); text-decoration: none; text-transform: uppercase; transition: all 0.2s ease; }
+        .header-cta:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--prosma-black); }
+        @media (min-width: 768px) { .header-cta { display: flex; } }
+
+        main { padding-top: 100px; padding-bottom: 60px; }
+
+        .progress-container { margin-bottom: 40px; display: none; }
+        .progress-container.visible { display: block; }
+        .progress-bar { display: flex; gap: 8px; }
+        .progress-step { flex: 1; height: 10px; background: var(--prosma-white); border: 2px solid var(--prosma-black); border-radius: 5px; transition: all 0.3s ease; }
+        .progress-step.active { background: var(--prosma-black); }
+        .progress-step.completed { background: var(--prosma-turquoise); }
+
+        .step { display: none; animation: stepIn 0.4s ease; }
+        .step.active { display: block; }
+        @keyframes stepIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+        .landing { text-align: center; padding: 40px 0; }
+        .kv-headline { font-size: clamp(3rem, 12vw, 7rem); font-weight: 900; line-height: 0.95; text-transform: uppercase; margin-bottom: 24px; }
+        .kv-headline .line1, .kv-headline .line2 { display: block; color: var(--prosma-turquoise); text-shadow: 4px 4px 0 var(--prosma-yellow); }
+        .landing-subheadline { font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: 700; color: var(--prosma-black); opacity: 0.8; margin-bottom: 48px; max-width: 550px; margin-left: auto; margin-right: auto; }
+
+        .btn-start { display: inline-flex; align-items: center; gap: 16px; padding: 22px 52px; background: var(--prosma-yellow); border: 3px solid var(--prosma-black); box-shadow: 5px 5px 0 var(--prosma-black); font-family: var(--font-main); font-size: clamp(1.1rem, 3.5vw, 1.5rem); font-weight: 800; color: var(--prosma-black); text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
+        .btn-start:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0 var(--prosma-black); }
+        .btn-start:active { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--prosma-black); }
+
+        .value-props { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 72px; }
+        .value-prop { padding: 24px 20px; background: var(--prosma-white); border: 3px solid var(--prosma-black); text-align: center; }
+        .value-prop:nth-child(1) { transform: rotate(-2deg); box-shadow: 4px 4px 0 var(--prosma-turquoise); }
+        .value-prop:nth-child(2) { transform: rotate(1deg); box-shadow: 4px 4px 0 var(--prosma-yellow); }
+        .value-prop:nth-child(3) { transform: rotate(-1deg); box-shadow: 4px 4px 0 var(--prosma-turquoise); }
+        .value-prop h4 { font-size: 1rem; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; color: var(--prosma-turquoise); }
+        .value-prop p { font-size: 0.85rem; font-weight: 500; color: var(--prosma-black); opacity: 0.7; }
+        @media (max-width: 640px) { .value-props { grid-template-columns: 1fr; } .value-prop { transform: none !important; } }
+
+        .step-headline { font-size: clamp(1.8rem, 5.5vw, 3rem); font-weight: 900; line-height: 1; text-transform: uppercase; margin-bottom: 12px; color: var(--prosma-black); }
+        .step-headline .highlight { color: var(--prosma-turquoise); }
+        .step-subheadline { font-size: 1rem; font-weight: 600; color: var(--prosma-black); opacity: 0.6; margin-bottom: 36px; max-width: 480px; }
+
+        .slider-card { background: var(--prosma-white); border: 3px solid var(--prosma-black); box-shadow: 5px 5px 0 var(--prosma-turquoise); padding: 28px; margin-bottom: 20px; }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .slider-value { font-size: 2.25rem; font-weight: 900; color: var(--prosma-black); }
+        .slider-icon-svg { width: 56px; height: 56px; }
+
+        input[type="range"] { width: 100%; height: 14px; background: var(--prosma-black); border-radius: 7px; outline: none; -webkit-appearance: none; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; background: var(--prosma-turquoise); border: 3px solid var(--prosma-black); border-radius: 50%; cursor: grab; transition: transform 0.15s ease; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type="range"]::-moz-range-thumb { width: 36px; height: 36px; background: var(--prosma-turquoise); border: 3px solid var(--prosma-black); border-radius: 50%; cursor: grab; }
+
+        .info-hint { display: none; padding: 16px 20px; background: var(--soft-rose); border: 3px solid var(--playful-red); margin-top: 16px; animation: hintPop 0.25s ease; cursor: pointer; transition: all 0.3s ease; }
+        .info-hint.visible { display: block; }
+        .info-hint-header { display: flex; justify-content: space-between; align-items: center; }
+        .info-hint-title { font-size: 0.95rem; font-weight: 800; color: var(--playful-red); }
+        .info-hint-toggle { font-size: 0.75rem; font-weight: 700; color: var(--playful-red); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .info-hint-toggle svg { transition: transform 0.3s ease; }
+        .info-hint.expanded .info-hint-toggle svg { transform: rotate(180deg); }
+        .info-hint-summary { font-size: 0.9rem; font-weight: 600; color: var(--prosma-black); margin-top: 8px; }
+        .info-hint-details { display: none; margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--playful-red); }
+        .info-hint.expanded .info-hint-details { display: block; animation: stepIn 0.3s ease; }
+        .info-hint-details p { font-size: 0.85rem; font-weight: 500; line-height: 1.6; margin-bottom: 12px; }
+        .info-hint-details a { display: inline-flex; align-items: center; gap: 6px; color: var(--playful-red); font-weight: 700; text-decoration: none; font-size: 0.85rem; }
+        .info-hint-details a:hover { text-decoration: underline; }
+        @keyframes hintPop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+        /* Turquoise and Purple info hints */
+        .info-hint.turquoise { background: var(--soft-turquoise); border-color: var(--prosma-turquoise); }
+        .info-hint.turquoise .info-hint-title, .info-hint.turquoise .info-hint-toggle { color: var(--prosma-turquoise); }
+        .info-hint.turquoise .info-hint-details { border-top-color: var(--prosma-turquoise); }
+        .info-hint.turquoise .info-hint-details a { color: var(--prosma-turquoise); }
+        .info-hint.purple { background: rgba(90, 35, 150, 0.15); border-color: var(--playful-purple); }
+        .info-hint.purple .info-hint-title, .info-hint.purple .info-hint-toggle { color: var(--playful-purple); }
+        .info-hint.purple .info-hint-details { border-top-color: var(--playful-purple); }
+        .info-hint.purple .info-hint-details a { color: var(--playful-purple); }
+
+        /* One-to-Many Card */
+        .onetomany-card { background: var(--playful-purple); border: 3px solid var(--prosma-black); box-shadow: 5px 5px 0 var(--prosma-black); padding: 24px; margin-top: 20px; margin-bottom: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; opacity: 0.7; color: var(--prosma-white); display: none; }
+        .onetomany-card.visible { display: block; animation: hintPop 0.3s ease; }
+        .onetomany-card:hover { opacity: 0.85; }
+        .onetomany-card.selected { opacity: 1; transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--prosma-black); }
+        .onetomany-card-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .onetomany-card-title { font-size: 1.1rem; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
+        .onetomany-card-subtitle { font-size: 0.85rem; font-weight: 500; opacity: 0.85; }
+
+        .stopwatch-container { position: relative; width: 56px; height: 56px; }
+        .stopwatch-svg { width: 100%; height: 100%; }
+        .stopwatch-hand { transform-origin: 50% 50%; transition: transform 0.3s ease; }
+
+        .toggle-section { margin-bottom: 28px; }
+        .toggle-label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; padding: 10px 14px; background: var(--prosma-white); border-left: 4px solid var(--prosma-turquoise); color: var(--prosma-black); }
+        .toggle-label.negative { border-left-color: var(--playful-red); }
+        .toggle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (max-width: 640px) { .toggle-grid { grid-template-columns: 1fr; } }
+
+        .toggle-card { padding: 16px 18px; background: var(--prosma-white); border: 3px solid var(--prosma-black); cursor: pointer; transition: all 0.15s ease; font-weight: 700; font-size: 0.9rem; user-select: none; opacity: 0.5; display: flex; align-items: center; gap: 12px; }
+        .toggle-card:hover { opacity: 0.8; }
+        .toggle-card.selected { opacity: 1; }
+        .toggle-card.selected.positive { background: var(--prosma-turquoise); box-shadow: 4px 4px 0 var(--prosma-black); }
+        .toggle-card.selected.negative { background: var(--playful-red); color: var(--prosma-white); box-shadow: 4px 4px 0 var(--prosma-black); }
+        .toggle-card.selected.warning { background: var(--prosma-yellow); box-shadow: 4px 4px 0 var(--prosma-black); }
+        .toggle-card.selected.info { background: var(--playful-purple); color: var(--prosma-white); box-shadow: 4px 4px 0 var(--prosma-black); }
+        .toggle-icon { font-size: 1.25rem; flex-shrink: 0; }
+        .toggle-text { flex: 1; }
+
+        .email-card { background: var(--prosma-yellow); border: 3px solid var(--prosma-black); box-shadow: 5px 5px 0 var(--prosma-black); padding: 24px; margin-bottom: 28px; text-align: center; cursor: pointer; transition: all 0.2s ease; opacity: 0.6; }
+        .email-card:hover { opacity: 0.8; }
+        .email-card.selected { opacity: 1; transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--prosma-black); }
+        .email-card-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .email-card-title { font-size: 1.35rem; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
+        .email-card-subtitle { font-size: 0.9rem; font-weight: 600; opacity: 0.8; }
+
+        .input-card { background: var(--prosma-white); border: 3px solid var(--prosma-black); padding: 22px; margin-bottom: 14px; }
+        .input-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .input-card-icon { font-size: 1.75rem; }
+        .input-card-label strong { display: block; font-size: 0.95rem; font-weight: 800; }
+        .input-card-label span { font-size: 0.8rem; opacity: 0.6; font-weight: 500; }
+
+        .slider-input-combo { display: flex; flex-direction: column; gap: 14px; }
+        .slider-input-combo input[type="range"] { width: 100%; }
+        .slider-input-combo .direct-input { display: flex; justify-content: center; align-items: baseline; gap: 8px; }
+        .slider-input-combo input[type="number"] { width: 100px; padding: 10px; border: 3px solid var(--prosma-black); font-family: var(--font-main); font-size: 1.5rem; font-weight: 900; text-align: center; background: var(--prosma-white); }
+        .slider-input-combo input[type="number"]:focus { outline: none; border-color: var(--prosma-turquoise); }
+        .input-unit { font-size: 0.9rem; font-weight: 700; opacity: 0.6; }
+
+        .frequency-toggle { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+        .frequency-toggle label { font-weight: 700; font-size: 0.95rem; }
+        .frequency-toggle input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--prosma-turquoise); cursor: pointer; }
+        .frequency-controls { display: none; }
+        .frequency-controls.visible { display: block; animation: stepIn 0.3s ease; }
+
+        .conditional-field { display: none; margin-top: 14px; padding: 18px; background: var(--soft-rose); border: 2px solid var(--playful-red); animation: stepIn 0.3s ease; }
+        .conditional-field.visible { display: block; }
+        .conditional-field label { display: block; font-weight: 700; font-size: 0.9rem; margin-bottom: 10px; }
+        .conditional-field .stepper-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+        .stepper-btn { width: 44px; height: 44px; background: var(--prosma-white); border: 2px solid var(--prosma-black); font-size: 1.25rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .stepper-btn:hover { background: var(--prosma-turquoise); }
+        .stepper-value { font-size: 1.25rem; font-weight: 900; min-width: 80px; text-align: center; }
+
+        .step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 44px; }
+        .btn-back { width: 56px; height: 56px; background: var(--prosma-white); border: 3px solid var(--prosma-black); font-size: 1.4rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+        .btn-back:hover { background: var(--soft-grey); }
+        .btn-next { display: inline-flex; align-items: center; gap: 10px; padding: 18px 32px; background: var(--prosma-turquoise); border: 3px solid var(--prosma-black); box-shadow: 4px 4px 0 var(--prosma-black); font-family: var(--font-main); font-size: 1rem; font-weight: 800; color: var(--prosma-black); text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
+        .btn-next:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--prosma-black); }
+        .btn-next:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--prosma-black); }
+        .btn-next.calculate { background: var(--prosma-yellow); font-size: 1.15rem; padding: 22px 44px; }
+        .btn-placeholder { width: 56px; }
+
+        .results-container { animation: stepIn 0.5s ease; }
+        .results-hero { text-align: center; padding: 44px 28px; background: var(--prosma-yellow); border: 3px solid var(--prosma-black); box-shadow: 6px 6px 0 var(--prosma-black); margin-bottom: 36px; transform: rotate(1deg); }
+        .results-label { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 8px; }
+        .results-total { font-size: clamp(2.5rem, 11vw, 5rem); font-weight: 900; line-height: 1; margin-bottom: 10px; color: var(--prosma-black); }
+        .results-context { font-size: 0.95rem; font-weight: 600; opacity: 0.7; }
+
+        .ai-audit-section { text-align: center; margin-bottom: 44px; }
+        .btn-ai-audit { display: inline-flex; align-items: center; gap: 14px; padding: 22px 36px; background: var(--playful-purple); border: 3px solid var(--prosma-black); box-shadow: 4px 4px 0 var(--prosma-black); font-family: var(--font-main); font-size: 1rem; font-weight: 800; color: var(--prosma-white); text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
+        .btn-ai-audit:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--prosma-black); }
+        .btn-ai-audit:disabled { opacity: 0.7; cursor: wait; }
+        .ai-result { display: none; background: var(--playful-purple); border: 3px solid var(--prosma-black); box-shadow: 5px 5px 0 var(--prosma-turquoise); padding: 28px; color: var(--prosma-white); text-align: left; transform: rotate(0.5deg); }
+        .ai-result.visible { display: block; animation: stepIn 0.4s ease; }
+        .ai-result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .ai-result-header h3 { font-size: 1.15rem; font-weight: 800; text-transform: uppercase; color: var(--prosma-yellow); }
+        .ai-result-content { font-size: 1rem; font-weight: 500; line-height: 1.6; }
+
+        .projections-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 36px; }
+        @media (max-width: 640px) { .projections-grid { grid-template-columns: 1fr; } }
+        .projection-card { background: var(--prosma-white); border: 3px solid var(--prosma-black); padding: 22px; text-align: center; }
+        .projection-value { font-size: 1.4rem; font-weight: 900; margin-bottom: 4px; color: var(--prosma-black); }
+        .projection-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6; }
+
+        .section-title { font-size: 1.35rem; font-weight: 900; text-transform: uppercase; margin-bottom: 18px; color: var(--prosma-black); }
+        .breakdown-section { margin-bottom: 36px; }
+        .breakdown-card { background: var(--prosma-white); border: 3px solid var(--prosma-black); padding: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .breakdown-card.highlight-red { background: var(--soft-rose); border-color: var(--playful-red); box-shadow: 4px 4px 0 var(--playful-red); }
+        .breakdown-card.highlight-purple { background: rgba(90, 35, 150, 0.1); border-color: var(--playful-purple); box-shadow: 4px 4px 0 var(--playful-purple); }
+        .breakdown-info h4 { font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+        .breakdown-info p { font-size: 0.8rem; font-weight: 500; opacity: 0.6; }
+        .breakdown-value { font-size: 1.35rem; font-weight: 900; white-space: nowrap; }
+        .breakdown-value.negative { color: var(--playful-red); }
+        .breakdown-value.purple { color: var(--playful-purple); }
+
+        .factors-section { margin-bottom: 36px; }
+        .factor-item { display: flex; align-items: center; gap: 14px; background: var(--prosma-white); border: 3px solid var(--prosma-black); padding: 14px 18px; margin-bottom: 10px; }
+        .factor-icon { font-size: 1.2rem; }
+        .factor-info { flex: 1; }
+        .factor-name { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+        .factor-desc { font-size: 0.75rem; font-weight: 500; opacity: 0.6; }
+        .factor-percent { font-size: 1rem; font-weight: 900; color: var(--playful-red); }
+        .factors-empty { background: var(--soft-turquoise); border: 3px solid var(--prosma-turquoise); padding: 28px; text-align: center; }
+        .factors-empty h4 { font-size: 1.35rem; font-weight: 900; color: var(--prosma-turquoise); text-transform: uppercase; margin-bottom: 8px; }
+
+        .tips-section { background: var(--prosma-black); border: 3px solid var(--prosma-turquoise); box-shadow: 6px 6px 0 var(--prosma-turquoise); padding: 36px; margin-bottom: 36px; color: var(--prosma-white); }
+        .tips-title { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; color: var(--prosma-yellow); margin-bottom: 28px; }
+        .tips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
+        @media (max-width: 640px) { .tips-grid { grid-template-columns: 1fr; } }
+        .tip-item { display: flex; gap: 14px; }
+        .tip-icon { font-size: 1.75rem; flex-shrink: 0; }
+        .tip-content h4 { font-size: 1rem; font-weight: 800; color: var(--prosma-yellow); margin-bottom: 6px; }
+        .tip-content p { font-size: 0.85rem; font-weight: 500; opacity: 0.8; line-height: 1.5; }
+
+        .lead-section { background: var(--prosma-white); border: 3px solid var(--prosma-black); padding: 36px; text-align: center; margin-bottom: 36px; }
+        .lead-section h3 { font-size: 1.35rem; font-weight: 900; margin-bottom: 8px; }
+        .lead-section > p { font-size: 0.95rem; font-weight: 500; opacity: 0.7; margin-bottom: 22px; }
+        .lead-form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; }
+        @media (max-width: 640px) { .lead-form { flex-direction: column; } }
+        .lead-form input { flex: 1; padding: 16px 18px; border: 3px solid var(--prosma-black); font-family: var(--font-main); font-size: 0.95rem; font-weight: 600; }
+        .lead-form input:focus { outline: none; border-color: var(--prosma-turquoise); }
+        .lead-form button { padding: 16px 26px; background: var(--prosma-black); border: 3px solid var(--prosma-black); color: var(--prosma-white); font-family: var(--font-main); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
+        .lead-form button:hover { background: var(--prosma-turquoise); color: var(--prosma-black); }
+        .privacy-note { font-size: 0.75rem; font-weight: 500; opacity: 0.6; margin-top: 14px; }
+        .privacy-note a { color: var(--playful-purple); font-weight: 600; }
+
+        .cta-section { text-align: center; padding: 36px 0; }
+        .cta-section h3 { font-size: 1.75rem; font-weight: 900; margin-bottom: 8px; }
+        .cta-section > p { font-size: 1rem; font-weight: 500; opacity: 0.7; margin-bottom: 28px; }
+        .btn-cta { display: inline-flex; align-items: center; gap: 14px; padding: 22px 44px; background: var(--prosma-turquoise); border: 3px solid var(--prosma-black); box-shadow: 5px 5px 0 var(--prosma-black); font-family: var(--font-main); font-size: 1.15rem; font-weight: 800; color: var(--prosma-black); text-decoration: none; text-transform: uppercase; transition: all 0.2s ease; }
+        .btn-cta:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--prosma-black); }
+        .btn-restart { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; padding: 14px 28px; background: var(--prosma-white); border: 3px solid var(--prosma-black); font-family: var(--font-main); font-size: 0.9rem; font-weight: 700; color: var(--prosma-black); text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
+        .btn-restart:hover { background: var(--soft-grey); }
+
+        .assumptions { padding: 22px; background: var(--prosma-white); border: 2px solid rgba(0,0,0,0.1); margin-top: 28px; }
+        .assumptions-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 8px; }
+        .assumptions-list { font-size: 0.75rem; font-weight: 500; opacity: 0.6; line-height: 1.8; }
+
+        footer { background: var(--prosma-black); color: var(--prosma-white); padding: 56px 24px; margin-top: 56px; }
+        .footer-content { max-width: 800px; margin: 0 auto; }
+        .footer-tagline { font-size: clamp(1.4rem, 4.5vw, 2.2rem); font-weight: 900; text-transform: uppercase; line-height: 1.1; margin-bottom: 14px; }
+        .footer-tagline span { color: var(--prosma-turquoise); }
+        .footer-quote { font-size: 0.95rem; font-weight: 500; font-style: italic; opacity: 0.7; margin-bottom: 36px; }
+        .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.2); flex-wrap: wrap; gap: 14px; }
+        .footer-copy { font-size: 0.95rem; font-weight: 800; }
+        .footer-links { display: flex; gap: 22px; }
+        .footer-links a { font-size: 0.8rem; font-weight: 600; color: var(--prosma-white); text-decoration: none; text-transform: uppercase; opacity: 0.7; transition: all 0.2s ease; }
+        .footer-links a:hover { opacity: 1; color: var(--prosma-turquoise); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body>
+    <div class="core-elements">
+        <div class="core-el ce-1 ce-diamond"></div>
+        <div class="core-el ce-2 ce-circle-outline"></div>
+        <div class="core-el ce-3 ce-square-outline"></div>
+        <div class="core-el ce-4 ce-triangle-filled"></div>
+        <div class="core-el ce-5 ce-circle-filled"></div>
+        <div class="core-el ce-6 ce-diamond"></div>
+        <div class="core-el ce-7 ce-dots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="core-el ce-8 ce-square-outline"></div>
+    </div>
+
+    <header>
+        <div class="logo" onclick="restartCalculator()">
+            <svg class="logo-hexagon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 5L90 27.5V72.5L50 95L10 72.5V27.5L50 5Z" stroke="#23D2C8" stroke-width="6" fill="none"/>
+                <path d="M50 20L75 35V65L50 80L25 65V35L50 20Z" stroke="#23D2C8" stroke-width="4" fill="none"/>
+                <path d="M50 35L62.5 42.5V57.5L50 65L37.5 57.5V42.5L50 35Z" fill="#23D2C8"/>
+            </svg>
+            <span class="logo-text">PROSMA</span>
+        </div>
+        <a href="https://www.prosma.de/future-of-work/meetingdiaet/" target="_blank" class="header-cta">Workshop anfragen →</a>
+    </header>
+
+    <div class="container">
+        <main>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-step" data-step="1"></div>
+                    <div class="progress-step" data-step="2"></div>
+                    <div class="progress-step" data-step="3"></div>
+                    <div class="progress-step" data-step="4"></div>
+                </div>
+            </div>
+
+            <!-- Step 0: Landing -->
+            <div class="step active" data-step="0">
+                <div class="landing">
+                    <h1 class="kv-headline">
+                        <span class="line1">MEETING</span>
+                        <span class="line2">DIÄT</span>
+                    </h1>
+                    <p class="landing-subheadline">Wieviel Kohle verbrennt dein nächstes Meeting wirklich?</p>
+                    <button class="btn-start" onclick="startCalculator()">
+                        Jetzt prüfen
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </button>
+                    <div class="value-props">
+                        <div class="value-prop">
+                            <h4>Wissenschaftlich fundiert</h4>
+                            <p>Basierend auf aktuellen Arbeitsstudien & Forschung.</p>
+                        </div>
+                        <div class="value-prop">
+                            <h4>People First</h4>
+                            <p>Retention & Fokus als höchstes Gut.</p>
+                        </div>
+                        <div class="value-prop">
+                            <h4>No Bullshit</h4>
+                            <p>Kein Buzzword-Bingo. Nur harte Zahlen.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Teilnehmer -->
+            <div class="step" data-step="1">
+                <h2 class="step-headline">Wie viele <span class="highlight">Köpfe</span><br>sind dabei?</h2>
+                <p class="step-subheadline">Die Anzahl der Teilnehmer beeinflusst die Dynamik massiv.</p>
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-value" id="participantsValue">6 Personen</span>
+                        <svg class="slider-icon-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="32" cy="18" r="10" stroke="#23D2C8" stroke-width="3" fill="none"/>
+                            <path d="M12 54c0-11 9-20 20-20s20 9 20 20" stroke="#23D2C8" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <circle cx="52" cy="22" r="7" stroke="#91E8E2" stroke-width="2" fill="none"/>
+                            <path d="M60 48c0-7-5-12-12-12" stroke="#91E8E2" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <circle cx="12" cy="22" r="7" stroke="#91E8E2" stroke-width="2" fill="none"/>
+                            <path d="M4 48c0-7 5-12 12-12" stroke="#91E8E2" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <input type="range" id="participants" min="2" max="31" value="6">
+                </div>
+                <div class="info-hint" id="ringelmannHint" onclick="toggleHintExpand(this)">
+                    <div class="info-hint-header">
+                        <span class="info-hint-title">Ringelmann-Effekt</span>
+                        <span class="info-hint-toggle">Mehr erfahren <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <p class="info-hint-summary">Ab 6 Personen sinkt die individuelle Leistung statistisch – der Beitrag des Einzelnen nimmt ab!</p>
+                    <div class="info-hint-details">
+                        <p>Der französische Agraringenieur Maximilien Ringelmann entdeckte bereits 1882, dass Menschen in Gruppen weniger Leistung bringen als allein. Je größer die Gruppe, desto stärker der Effekt.</p>
+                        <p><strong>Soziales Faulenzen (Social Loafing):</strong> 1979 zeigten Latané und Kollegen, dass der Effekt primär auf Motivationsverlust zurückgeht – wenn der individuelle Beitrag nicht sichtbar ist, schaltet das Gehirn auf "Sparbetrieb". Karau & Williams bestätigten 1993 in einer Meta-Analyse: Der Effekt tritt bei körperlichen UND geistigen Aufgaben auf.</p>
+                        <p><strong>Gegenmaßnahmen:</strong> Individuelle Beiträge sichtbar machen, klare Verantwortlichkeiten definieren, Teammitgliedern ihre Bedeutung bewusst machen.</p>
+                        <p><strong>Faustregel:</strong> Die ideale Meeting-Größe liegt bei 4-5 Personen. Amazon nutzt die "Two Pizza Rule" – ein Meeting sollte nie mehr Teilnehmer haben, als zwei Pizzen satt machen können.</p>
+                        <a href="https://de.wikipedia.org/wiki/Ringelmann-Effekt" target="_blank">Wikipedia: Ringelmann-Effekt →</a>
+                        <br><br>
+                        <a href="https://de.wikipedia.org/wiki/Soziales_Faulenzen" target="_blank">Wikipedia: Soziales Faulenzen →</a>
+                    </div>
+                </div>
+
+                <!-- One-to-Many Abfrage ab 16 Personen -->
+                <div class="onetomany-card" id="onetomanyCard" onclick="toggleOnetomanyCard()">
+                    <div class="onetomany-card-icon">🎤</div>
+                    <div class="onetomany-card-title">Ist das ein Vortrag / Präsentation?</div>
+                    <div class="onetomany-card-subtitle">Bei "One-to-Many"-Formaten ist eine Aufzeichnung oft sinnvoller als ein Live-Meeting.</div>
+                </div>
+
+                <!-- Social Facilitation Info (bei Vortrag) -->
+                <div class="info-hint purple" id="socialFacilitationHint" onclick="toggleHintExpand(this)">
+                    <div class="info-hint-header">
+                        <span class="info-hint-title">Social Facilitation</span>
+                        <span class="info-hint-toggle">Mehr erfahren <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <p class="info-hint-summary">Bei Vorträgen vor großem Publikum steigt der Stress – eine Aufzeichnung könnte effizienter sein!</p>
+                    <div class="info-hint-details">
+                        <p><strong>Social Facilitation (Soziale Erleichterung)</strong> beschreibt, dass Menschen bei Anwesenheit anderer bei <em>einfachen</em> Aufgaben besser, bei <em>komplexen</em> Aufgaben aber schlechter performen.</p>
+                        <p>Robert Zajonc zeigte 1965: Die bloße Anwesenheit von Zuschauern erzeugt Erregung. Diese führt zu dominanten Reaktionen – bei komplexen Themen können das Fehler oder Blackouts sein.</p>
+                        <p><strong>Für Vorträge bedeutet das:</strong> Der Präsentierende steht unter erhöhtem Stress, während das Publikum passiv konsumiert. Eine asynchrone Aufzeichnung ermöglicht bessere Vorbereitung, Nachbearbeitung und individuelle Wiedergabegeschwindigkeit.</p>
+                        <p><strong>Tipp:</strong> Komplexe Präsentationen aufzeichnen und asynchron teilen. Live-Zeit für Q&A und Diskussion nutzen.</p>
+                        <a href="https://de.wikipedia.org/wiki/Social_Facilitation" target="_blank">Wikipedia: Social Facilitation →</a>
+                    </div>
+                </div>
+
+                <div class="step-nav">
+                    <div class="btn-placeholder"></div>
+                    <button class="btn-next" onclick="nextStep()">Weiter →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Dauer -->
+            <div class="step" data-step="2">
+                <h2 class="step-headline">Wie lange<br><span class="highlight">dauert</span> es?</h2>
+                <p class="step-subheadline">Zeit ist die teuerste Ressource deiner Company.</p>
+                <div class="slider-card">
+                    <div class="slider-header">
+                        <span class="slider-value" id="durationValue">60 Minuten</span>
+                        <div class="stopwatch-container">
+                            <svg class="stopwatch-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="36" r="24" stroke="#23D2C8" stroke-width="3" fill="none"/>
+                                <rect x="28" y="4" width="8" height="10" rx="2" stroke="#23D2C8" stroke-width="2" fill="none"/>
+                                <rect x="50" y="20" width="8" height="6" rx="1" stroke="#23D2C8" stroke-width="2" fill="none"/>
+                                <circle cx="32" cy="36" r="3" fill="#23D2C8"/>
+                                <line x1="32" y1="16" x2="32" y2="20" stroke="#23D2C8" stroke-width="2"/>
+                                <line x1="32" y1="52" x2="32" y2="56" stroke="#23D2C8" stroke-width="2"/>
+                                <line x1="12" y1="36" x2="16" y2="36" stroke="#23D2C8" stroke-width="2"/>
+                                <line x1="48" y1="36" x2="52" y2="36" stroke="#23D2C8" stroke-width="2"/>
+                                <line id="stopwatchHand" class="stopwatch-hand" x1="32" y1="36" x2="32" y2="20" stroke="#FFE632" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <input type="range" id="duration" min="15" max="195" value="60" step="15">
+                </div>
+                <div class="info-hint" id="durationHint" onclick="toggleHintExpand(this)">
+                    <div class="info-hint-header">
+                        <span class="info-hint-title">Parkinson's Law</span>
+                        <span class="info-hint-toggle">Mehr erfahren <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <p class="info-hint-summary">Arbeit dehnt sich auf die verfügbare Zeit aus. Die meisten Themen lassen sich in 25 Minuten klären!</p>
+                    <div class="info-hint-details">
+                        <p>Cyril Northcote Parkinson formulierte 1955 das Gesetz: <em>"Work expands so as to fill the time available for its completion."</em></p>
+                        <p><strong>Was bedeutet das?</strong> Wenn du für ein Meeting 60 Minuten einplanst, wird es 60 Minuten dauern – auch wenn das Thema in 25 Minuten geklärt wäre.</p>
+                        <p><strong>Praxis-Tipp:</strong> Plane Meetings für 25 oder 50 Minuten statt 30 oder 60. Das gibt allen Teilnehmern Puffer zur nächsten Besprechung und erzwingt Fokus.</p>
+                        <a href="https://de.wikipedia.org/wiki/Parkinsonsche_Gesetze" target="_blank">Wikipedia-Artikel lesen →</a>
+                    </div>
+                </div>
+
+                <!-- Zoom Fatigue (ab 30 Min) -->
+                <div class="info-hint turquoise" id="zoomFatigueHint" onclick="toggleHintExpand(this)">
+                    <div class="info-hint-header">
+                        <span class="info-hint-title">Zoom Fatigue</span>
+                        <span class="info-hint-toggle">Mehr erfahren <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <p class="info-hint-summary">Bei Video-Calls setzt Ermüdung bereits nach ~30 Minuten ein – plane häufiger Pausen als bei Präsenz-Meetings!</p>
+                    <div class="info-hint-details">
+                        <p><strong>Microsoft Human Factors Lab (2021):</strong> EEG-Messungen zeigen, dass Back-to-Back Video-Meetings zu einem stetigen Anstieg von Beta-Wellen (Stress) führen. Schon 10-minütige Pausen ermöglichen dem Gehirn ein "Reset".</p>
+                        <p><strong>Stanford VHIL:</strong> Professor Jeremy Bailenson identifizierte vier Hauptursachen für Zoom Fatigue: übermäßiger Augenkontakt, ständige Selbstbeobachtung (Spiegel-Effekt), eingeschränkte Bewegung und erhöhte kognitive Last.</p>
+                        <p><strong>Empfehlung:</strong> Bei Remote-Meetings häufiger Pausen einplanen als bei Präsenz. Microsoft empfiehlt 25-Minuten-Slots statt 30, um natürliche Pausen zu erzwingen.</p>
+                        <a href="https://www.microsoft.com/en-us/worklab/work-trend-index/brain-research" target="_blank">Microsoft Brain Research →</a>
+                        <br><br>
+                        <a href="https://news.stanford.edu/stories/2021/02/four-causes-zoom-fatigue-solutions" target="_blank">Stanford: Zoom Fatigue →</a>
+                    </div>
+                </div>
+
+                <!-- Lange Meetings (ab 90 Min) -->
+                <div class="info-hint" id="longMeetingHint" onclick="toggleHintExpand(this)">
+                    <div class="info-hint-header">
+                        <span class="info-hint-title">Pause nötig!</span>
+                        <span class="info-hint-toggle">Mehr erfahren <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    <p class="info-hint-summary">Das menschliche Gehirn kann maximal 90 Minuten fokussiert arbeiten – danach ist eine substanzielle Pause Pflicht!</p>
+                    <div class="info-hint-details">
+                        <p><strong>Kognitive Grenze:</strong> Nach ca. 90 Minuten intensiver Konzentration erreicht das Gehirn einen Erschöpfungszustand. Bei Remote-Meetings kann dieser Punkt sogar früher erreicht werden.</p>
+                        <p><strong>Best Practice:</strong> Bei Ganztags-Workshops: 90-Minuten-Blöcke mit 20-30 Min Pausen. Bei Halbtags-Events: 15-20 Min Pausen. Eine Stretch-Pause nach 45 Min wird von Teilnehmern sehr geschätzt.</p>
+                        <p><strong>Tipp:</strong> Prüfe, ob du das Meeting aufteilen kannst. Zwei fokussierte 45-Minuten-Sessions sind oft produktiver als ein 90-Minuten-Marathon.</p>
+                    </div>
+                </div>
+
+                <div class="step-nav">
+                    <button class="btn-back" onclick="prevStep()">←</button>
+                    <button class="btn-next" onclick="nextStep()">Weiter →</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Meeting-Qualität -->
+            <div class="step" data-step="3">
+                <h2 class="step-headline">Meeting<br><span class="highlight">Qualitäts</span>-Check</h2>
+                <p class="step-subheadline">Sei ehrlich: Wie war das Meeting wirklich?</p>
+
+                <div class="email-card" id="emailCard" onclick="toggleEmailCard()">
+                    <div class="email-card-icon">📧</div>
+                    <div class="email-card-title">Hätte eine E-Mail gereicht?</div>
+                    <div class="email-card-subtitle">Wenn ja, hier klicken – das sagt schon viel aus.</div>
+                </div>
+
+                <div class="toggle-section">
+                    <div class="toggle-label">Das lief gut:</div>
+                    <div class="toggle-grid">
+                        <div class="toggle-card positive" data-factor="hasAgenda" onclick="toggleCard(this)"><span class="toggle-icon">📋</span><span class="toggle-text">Agenda war vorhanden</span></div>
+                        <div class="toggle-card positive" data-factor="hasTodos" onclick="toggleCard(this)"><span class="toggle-icon">✅</span><span class="toggle-text">Klare To-Dos am Ende</span></div>
+                        <div class="toggle-card positive" data-factor="hasTimekeeper" onclick="toggleCard(this)"><span class="toggle-icon">⏱</span><span class="toggle-text">Timekeeper vorhanden</span></div>
+                        <div class="toggle-card positive" data-factor="hasModeration" onclick="toggleCard(this)"><span class="toggle-icon">🎤</span><span class="toggle-text">Moderation vorhanden</span></div>
+                        <div class="toggle-card positive" data-factor="rightPeople" onclick="toggleCard(this)"><span class="toggle-icon">👥</span><span class="toggle-text">Nur relevante Teilnehmer</span></div>
+                        <div class="toggle-card positive" data-factor="inviteSent" onclick="toggleCard(this)"><span class="toggle-icon">📨</span><span class="toggle-text">Einladung rechtzeitig verschickt</span></div>
+                    </div>
+                </div>
+
+                <div class="toggle-section">
+                    <div class="toggle-label negative">Das lief nicht so gut:</div>
+                    <div class="toggle-grid">
+                        <div class="toggle-card warning" data-factor="statusMeeting" onclick="toggleCard(this)"><span class="toggle-icon">📊</span><span class="toggle-text">Reines Status-Update</span></div>
+                        <div class="toggle-card info" data-factor="hybrid" onclick="toggleCard(this)"><span class="toggle-icon">💻</span><span class="toggle-text">Hybrides Setup mit schlechter Technik</span></div>
+                        <div class="toggle-card warning" data-factor="recurring" onclick="toggleCard(this)"><span class="toggle-icon">🔄</span><span class="toggle-text">Wiederkehrend ohne Rückblick</span></div>
+                        <div class="toggle-card warning" data-factor="noDecision" onclick="toggleCard(this)"><span class="toggle-icon">🚫</span><span class="toggle-text">Keine Entscheidungsbefugnis</span></div>
+                        <div class="toggle-card negative" data-factor="overtime" onclick="toggleCard(this)"><span class="toggle-icon">⏰</span><span class="toggle-text">Meeting wurde überzogen</span></div>
+                        <div class="toggle-card negative" data-factor="latePeople" onclick="toggleCard(this)"><span class="toggle-icon">🚶</span><span class="toggle-text">Leute kamen zu spät</span></div>
+                        <div class="toggle-card warning" data-factor="noFollowup" onclick="toggleCard(this)"><span class="toggle-icon">📝</span><span class="toggle-text">Keine Nachbearbeitung</span></div>
+                        <div class="toggle-card negative" data-factor="afterHours" onclick="toggleCard(this)"><span class="toggle-icon">🌙</span><span class="toggle-text">Meeting nach 17:00 Uhr</span></div>
+                    </div>
+                </div>
+
+                <div class="step-nav">
+                    <button class="btn-back" onclick="prevStep()">←</button>
+                    <button class="btn-next" onclick="nextStep()">Weiter →</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Finale Details -->
+            <div class="step" data-step="4">
+                <h2 class="step-headline">Letzte<br><span class="highlight">Details</span></h2>
+                <p class="step-subheadline">Noch ein paar Rahmenbedingungen für die Berechnung.</p>
+
+                <div class="input-card">
+                    <div class="input-card-header">
+                        <span class="input-card-icon">💰</span>
+                        <div class="input-card-label"><strong>Durchschnittlicher Stundenlohn</strong><span>Brutto-Personalkosten inkl. Lohnnebenkosten</span></div>
+                    </div>
+                    <div class="slider-input-combo">
+                        <input type="range" id="hourlyRateSlider" min="20" max="200" value="65" oninput="syncHourlyRate(this.value)">
+                        <div class="direct-input">
+                            <input type="number" id="hourlyRate" value="65" min="20" max="500" oninput="syncHourlyRateSlider(this.value)">
+                            <span class="input-unit">€/h</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-card">
+                    <div class="input-card-header">
+                        <span class="input-card-icon">🔄</span>
+                        <div class="input-card-label"><strong>Wiederkehrendes Meeting?</strong><span>Findet dieses Meeting regelmäßig statt?</span></div>
+                    </div>
+                    <div class="frequency-toggle">
+                        <input type="checkbox" id="isRecurring" onchange="toggleFrequencyControls()">
+                        <label for="isRecurring">Ja, das Meeting wiederholt sich</label>
+                    </div>
+                    <div class="frequency-controls" id="frequencyControls">
+                        <div class="slider-input-combo">
+                            <input type="range" id="frequencySlider" min="1" max="10" value="1" oninput="syncFrequency(this.value)">
+                            <div class="direct-input">
+                                <input type="number" id="frequency" value="1" min="1" max="20" oninput="syncFrequencySlider(this.value)">
+                                <span class="input-unit">× pro Monat</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="conditional-field" id="overtimeField">
+                    <label>⏰ Wie viele Minuten wurde überzogen?</label>
+                    <div class="stepper-row">
+                        <button class="stepper-btn" onclick="adjustStepper('overtimeMinutes', -5)">−</button>
+                        <span class="stepper-value" id="overtimeMinutesDisplay">10 Min</span>
+                        <button class="stepper-btn" onclick="adjustStepper('overtimeMinutes', 5)">+</button>
+                    </div>
+                    <input type="hidden" id="overtimeMinutes" value="10">
+                </div>
+
+                <div class="conditional-field" id="lateField">
+                    <label>🚶 Wie viele Minuten später begann das Meeting?</label>
+                    <div class="stepper-row">
+                        <button class="stepper-btn" onclick="adjustStepper('lateMinutes', -5)">−</button>
+                        <span class="stepper-value" id="lateMinutesDisplay">10 Min</span>
+                        <button class="stepper-btn" onclick="adjustStepper('lateMinutes', 5)">+</button>
+                    </div>
+                    <input type="hidden" id="lateMinutes" value="10">
+                </div>
+
+                <div class="step-nav">
+                    <button class="btn-back" onclick="prevStep()">←</button>
+                    <button class="btn-next calculate" onclick="calculateResults()">Kosten berechnen ⚡</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="step" data-step="results">
+                <div class="results-container">
+                    <div class="results-hero">
+                        <div class="results-label">Gesamte Meeting-Kosten</div>
+                        <div class="results-total" id="totalCost">0,00 €</div>
+                        <div class="results-context" id="resultsContext">pro Meeting</div>
+                    </div>
+
+                    <div class="ai-audit-section">
+                        <button class="btn-ai-audit" id="aiAuditBtn" onclick="triggerAiAudit()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-1v4a4 4 0 0 1-8 0v-4H7a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3V6a4 4 0 0 1 4-4z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>
+                            Prosma AI Audit starten
+                        </button>
+                        <div class="ai-result" id="aiResult">
+                            <div class="ai-result-header">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFE632" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <h3>Prosma AI Feedback</h3>
+                            </div>
+                            <div class="ai-result-content" id="aiResultContent"></div>
+                        </div>
+                    </div>
+
+                    <div class="projections-grid" id="projectionsGrid">
+                        <div class="projection-card"><div class="projection-value" id="costPerMonth">0 €</div><div class="projection-label">pro Monat</div></div>
+                        <div class="projection-card"><div class="projection-value" id="costPerYear">0 €</div><div class="projection-label">pro Jahr</div></div>
+                        <div class="projection-card"><div class="projection-value" id="costPerPerson">0 €</div><div class="projection-label">pro Kopf</div></div>
+                    </div>
+
+                    <div class="breakdown-section">
+                        <h3 class="section-title">Cost Breakdown</h3>
+                        <div id="breakdownCards"></div>
+                    </div>
+
+                    <div class="factors-section" id="factorsSection">
+                        <h3 class="section-title">Warum so teuer?</h3>
+                        <div id="factorItems"></div>
+                    </div>
+
+                    <div class="tips-section" id="tipsSection">
+                        <h2 class="tips-title">Prosma Game Changer Tips</h2>
+                        <div class="tips-grid" id="tipsGrid"></div>
+                    </div>
+
+                    <div class="lead-section">
+                        <h3>Report per Mail gefällig?</h3>
+                        <p>Wir schicken dir das Ergebnis – inklusive Tipps für schlankere Meetings.</p>
+                        <form class="lead-form" id="leadForm" onsubmit="submitLead(event)">
+                            <input type="email" id="emailInput" placeholder="deine@mail.de" required>
+                            <button type="submit">Senden</button>
+                        </form>
+                        <p class="privacy-note">Wir respektieren deine Privatsphäre. <a href="https://www.prosma.de/datenschutzerklaerung/" target="_blank">Datenschutzerklärung</a></p>
+                    </div>
+
+                    <div class="cta-section">
+                        <h3>Bereit für die Diät?</h3>
+                        <p>Weniger Meetings, mehr Flow – unser Workshop zeigt dir wie.</p>
+                        <a href="https://www.prosma.de/future-of-work/meetingdiaet/" class="btn-cta" target="_blank">Zur Meetingdiät →</a>
+                        <br>
+                        <button class="btn-restart" onclick="restartCalculator()">↺ Neuberechnen</button>
+                    </div>
+
+                    <div class="assumptions">
+                        <div class="assumptions-title">Berechnungsgrundlagen</div>
+                        <div class="assumptions-list" id="assumptionsList"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <h2 class="footer-tagline">Stop the Burn<span>.</span><br>Start the Work.</h2>
+            <p class="footer-quote">"Arbeit findet im Digitalen statt. People First, Transparency First."</p>
+            <div class="footer-bottom">
+                <div class="footer-copy">PROSMA © 2026</div>
+                <div class="footer-links">
+                    <a href="https://www.prosma.de/impressum/" target="_blank">Impressum</a>
+                    <a href="https://www.prosma.de/datenschutzerklaerung/" target="_blank">Datenschutz</a>
+                    <a href="https://www.prosma.de/" target="_blank">prosma.de</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentStep = 0;
+        const totalSteps = 4;
+        const selectedFactors = new Set();
+        let calculationData = {};
+        let isOneToMany = false;
+
+        function startCalculator() {
+            document.getElementById('progressContainer').classList.add('visible');
+            goToStep(1);
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            const target = document.querySelector(`.step[data-step="${step}"]`);
+            if (target) { target.classList.add('active'); currentStep = step; }
+            document.querySelectorAll('.progress-step').forEach(p => {
+                const num = parseInt(p.dataset.step);
+                p.classList.remove('active', 'completed');
+                if (num < step) p.classList.add('completed');
+                else if (num === step) p.classList.add('active');
+            });
+            if (step === 4) updateConditionalFields();
+        }
+
+        function nextStep() { if (currentStep < totalSteps) goToStep(currentStep + 1); }
+        function prevStep() { if (currentStep > 1) goToStep(currentStep - 1); }
+
+        const participantsSlider = document.getElementById('participants');
+        const durationSlider = document.getElementById('duration');
+
+        participantsSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            const displayVal = val >= 31 ? '30+' : val;
+            document.getElementById('participantsValue').textContent = displayVal + ' Personen';
+            // Ringelmann ab 6 Personen (nicht 8)
+            document.getElementById('ringelmannHint').classList.toggle('visible', val >= 6);
+            // One-to-Many ab 16 Personen
+            const onetomanyCard = document.getElementById('onetomanyCard');
+            if (onetomanyCard) {
+                onetomanyCard.classList.toggle('visible', val >= 16);
+                if (val < 16) {
+                    onetomanyCard.classList.remove('selected');
+                    isOneToMany = false;
+                    const sfHint = document.getElementById('socialFacilitationHint');
+                    if (sfHint) sfHint.classList.remove('visible');
+                }
+            }
+        });
+
+        durationSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            const displayVal = val >= 195 ? '180+' : val;
+            document.getElementById('durationValue').textContent = displayVal + ' Minuten';
+            document.getElementById('durationHint').classList.toggle('visible', val >= 60);
+            updateStopwatch(val);
+            // Zoom Fatigue ab 30 Min
+            const zoomHint = document.getElementById('zoomFatigueHint');
+            if (zoomHint) zoomHint.classList.toggle('visible', val >= 30);
+            // Lange Meetings ab 90 Min
+            const longHint = document.getElementById('longMeetingHint');
+            if (longHint) longHint.classList.toggle('visible', val >= 90);
+        });
+
+        function updateStopwatch(minutes) {
+            const hand = document.getElementById('stopwatchHand');
+            const rotation = (minutes / 60) * 360;
+            hand.style.transform = `rotate(${rotation}deg)`;
+        }
+        updateStopwatch(60);
+
+        function toggleHintExpand(element) { element.classList.toggle('expanded'); }
+
+        function syncHourlyRate(value) { document.getElementById('hourlyRate').value = value; }
+        function syncHourlyRateSlider(value) {
+            const slider = document.getElementById('hourlyRateSlider');
+            slider.value = Math.min(200, Math.max(20, parseInt(value) || 50));
+        }
+        function syncFrequency(value) { document.getElementById('frequency').value = value; }
+        function syncFrequencySlider(value) {
+            const slider = document.getElementById('frequencySlider');
+            slider.value = Math.min(10, Math.max(1, parseInt(value) || 1));
+        }
+        function toggleFrequencyControls() {
+            const checkbox = document.getElementById('isRecurring');
+            document.getElementById('frequencyControls').classList.toggle('visible', checkbox.checked);
+        }
+
+        function toggleCard(card) {
+            const factor = card.dataset.factor;
+            card.classList.toggle('selected');
+            if (selectedFactors.has(factor)) selectedFactors.delete(factor);
+            else selectedFactors.add(factor);
+            updateConditionalFields();
+        }
+
+        function toggleEmailCard() {
+            const card = document.getElementById('emailCard');
+            card.classList.toggle('selected');
+            if (selectedFactors.has('couldBeEmail')) selectedFactors.delete('couldBeEmail');
+            else selectedFactors.add('couldBeEmail');
+        }
+
+        function toggleOnetomanyCard() {
+            const card = document.getElementById('onetomanyCard');
+            card.classList.toggle('selected');
+            isOneToMany = card.classList.contains('selected');
+            // Social Facilitation Hint zeigen wenn Vortrag ausgewählt
+            document.getElementById('socialFacilitationHint').classList.toggle('visible', isOneToMany);
+        }
+
+        function updateConditionalFields() {
+            document.getElementById('overtimeField').classList.toggle('visible', selectedFactors.has('overtime'));
+            document.getElementById('lateField').classList.toggle('visible', selectedFactors.has('latePeople'));
+        }
+
+        function adjustStepper(fieldId, delta) {
+            const input = document.getElementById(fieldId);
+            const display = document.getElementById(fieldId + 'Display');
+            let value = Math.max(0, Math.min(60, (parseInt(input.value) || 0) + delta));
+            input.value = value;
+            display.textContent = value + ' Min';
+        }
+
+        function calculateResults() {
+            const participantsRaw = parseInt(document.getElementById('participants').value);
+            const participants = participantsRaw >= 31 ? 35 : participantsRaw; // 30+ wird als 35 berechnet
+            const durationRaw = parseInt(document.getElementById('duration').value);
+            const duration = durationRaw >= 195 ? 210 : durationRaw; // 180+ wird als 210 berechnet
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 65;
+            const isRecurring = document.getElementById('isRecurring').checked;
+            const frequency = isRecurring ? (parseInt(document.getElementById('frequency').value) || 1) : 1;
+            const overtimeMinutes = selectedFactors.has('overtime') ? (parseInt(document.getElementById('overtimeMinutes').value) || 0) : 0;
+            const lateMinutes = selectedFactors.has('latePeople') ? (parseInt(document.getElementById('lateMinutes').value) || 0) : 0;
+
+            const effectiveDuration = duration + overtimeMinutes;
+            const durationHours = effectiveDuration / 60;
+            const baseLaborCost = participants * durationHours * hourlyRate;
+            const lateStartCost = participants * (lateMinutes / 60) * hourlyRate;
+
+            let multiplier = 0;
+            let factors = [];
+            let tips = [];
+
+            const contextSwitchCost = participants * (23 / 60) * hourlyRate;
+
+            let efficiencyBonus = 0;
+            if (selectedFactors.has('hasAgenda')) efficiencyBonus += 0.15;
+            if (selectedFactors.has('hasTodos')) efficiencyBonus += 0.10;
+            if (selectedFactors.has('hasTimekeeper')) efficiencyBonus += 0.08;
+            if (selectedFactors.has('hasModeration')) efficiencyBonus += 0.08;
+            if (selectedFactors.has('rightPeople')) efficiencyBonus += 0.10;
+            if (selectedFactors.has('inviteSent')) efficiencyBonus += 0.05;
+
+            if (!selectedFactors.has('hasAgenda')) {
+                multiplier += 0.30;
+                factors.push({ name: 'Fehlende Agenda', desc: 'Ohne Agenda verliert ein Meeting 30% Effektivität', percent: 30, icon: '📋' });
+            }
+            if (!selectedFactors.has('hasTodos')) {
+                multiplier += 0.20;
+                factors.push({ name: 'Keine klaren To-Dos', desc: 'Entscheidungen verpuffen ohne Aktionspunkte', percent: 20, icon: '✅' });
+            }
+            
+            // Ringelmann ab 6 Personen (vorher 8)
+            if (participants >= 6) {
+                const ringelmann = Math.min((participants - 5) * 0.025, 0.30); // Sanfterer Anstieg, max 30%
+                multiplier += ringelmann;
+                factors.push({ name: 'Social Loafing (Ringelmann)', desc: 'Ab 6 Personen sinkt der individuelle Beitrag', percent: Math.round(ringelmann * 100), icon: '👥' });
+                tips.push({ icon: '👥', title: 'Teilnehmer-Diät', text: `Reduziere auf max. 5 Köpfe. Spart ca. ${formatCurrency(baseLaborCost * ringelmann)} pro Meeting.` });
+            }
+
+            // One-to-Many Faktor
+            if (isOneToMany) {
+                multiplier += 0.25;
+                factors.push({ name: 'One-to-Many Format', desc: 'Präsentation könnte effizienter als Aufzeichnung geteilt werden', percent: 25, icon: '🎤' });
+                tips.push({ icon: '📹', title: 'Aufzeichnung statt Live', text: 'Komplexe Präsentationen aufzeichnen und asynchron teilen. Live-Zeit für Q&A nutzen.' });
+            }
+
+            if (selectedFactors.has('couldBeEmail')) {
+                multiplier += 0.50;
+                factors.push({ name: 'Hätte eine E-Mail gereicht', desc: 'Dieses Meeting war möglicherweise überflüssig', percent: 50, icon: '📧' });
+                tips.push({ icon: '📧', title: 'E-Mail statt Meeting', text: 'Hinterfrage immer: Braucht es wirklich ein synchrones Meeting? Async first!' });
+            }
+            if (selectedFactors.has('statusMeeting')) {
+                multiplier += 0.40;
+                factors.push({ name: 'Reines Status-Update', desc: '71% der Senior Manager halten Status-Meetings für unproduktiv', percent: 40, icon: '📊' });
+                tips.push({ icon: '💬', title: 'Status asynchron', text: 'Status-Updates per Slack, Notion oder Mail – spart 100% dieses Meetings.' });
+            }
+            if (selectedFactors.has('hybrid')) {
+                multiplier += 0.20;
+                factors.push({ name: 'Hybrides Setup mit schlechter Technik', desc: 'Remote-Teilnehmer werden oft überhört', percent: 20, icon: '💻' });
+            }
+            if (selectedFactors.has('recurring')) {
+                multiplier += 0.25;
+                factors.push({ name: 'Wiederkehrend ohne Rückblick', desc: 'Routine-Meetings werden selten hinterfragt', percent: 25, icon: '🔄' });
+                tips.push({ icon: '📅', title: 'Quartals-Check', text: 'Prüfe alle 3 Monate: Ist dieses Meeting noch nötig?' });
+            }
+            if (selectedFactors.has('noDecision')) {
+                multiplier += 0.30;
+                factors.push({ name: 'Keine Entscheidungsbefugnis', desc: 'Ohne Entscheider sind Meetings ergebnislos', percent: 30, icon: '🚫' });
+            }
+            if (selectedFactors.has('overtime')) {
+                const overtimePct = Math.round((overtimeMinutes / duration) * 100);
+                factors.push({ name: 'Meeting überzogen', desc: `+${overtimeMinutes} Minuten über der geplanten Zeit`, percent: overtimePct, icon: '⏰' });
+            }
+            if (selectedFactors.has('latePeople')) {
+                multiplier += 0.10;
+                factors.push({ name: 'Verspäteter Start', desc: `${lateMinutes} Minuten Wartezeit für alle`, percent: Math.round((lateMinutes / duration) * 100), icon: '🚶' });
+            }
+            if (selectedFactors.has('noFollowup')) {
+                multiplier += 0.15;
+                factors.push({ name: 'Keine Nachbearbeitung', desc: 'Ohne Protokoll gehen Ergebnisse verloren', percent: 15, icon: '📝' });
+            }
+            if (selectedFactors.has('afterHours')) {
+                multiplier += 0.20;
+                factors.push({ name: 'Meeting nach 17:00 Uhr', desc: 'Belastet Work-Life-Balance und Konzentration', percent: 20, icon: '🌙' });
+                tips.push({ icon: '🕐', title: 'Kernzeit nutzen', text: 'Meetings auf den Vormittag legen. Schützt die Balance und spart 20%.' });
+            }
+
+            const cappedMultiplier = Math.min(multiplier, 1.5);
+            let hiddenInefficiency = baseLaborCost * cappedMultiplier;
+            if (efficiencyBonus > 0) hiddenInefficiency *= (1 - efficiencyBonus);
+
+            const totalPerMeeting = baseLaborCost + hiddenInefficiency + contextSwitchCost + lateStartCost;
+            
+            // Frequency ist jetzt pro Monat
+            const monthlyTotal = totalPerMeeting * frequency;
+            const yearlyTotal = monthlyTotal * 12;
+            const costPerPerson = totalPerMeeting / participants;
+
+            const displayParticipants = participantsRaw >= 31 ? '30+' : participantsRaw;
+            const displayDuration = durationRaw >= 195 ? '180+' : durationRaw;
+
+            calculationData = { 
+                participants, 
+                participantsDisplay: displayParticipants,
+                duration: effectiveDuration, 
+                durationDisplay: displayDuration,
+                hourlyRate, 
+                frequency, 
+                totalCost: totalPerMeeting, 
+                factors, 
+                selectedFactors: Array.from(selectedFactors), 
+                isRecurring,
+                isOneToMany
+            };
+
+            document.getElementById('progressContainer').classList.remove('visible');
+            goToStep('results');
+
+            document.getElementById('totalCost').textContent = formatCurrency(totalPerMeeting);
+            document.getElementById('resultsContext').textContent = `pro Meeting · ${displayParticipants} Personen · ${displayDuration} Min`;
+
+            const projectionsGrid = document.getElementById('projectionsGrid');
+            projectionsGrid.style.display = 'grid';
+            document.getElementById('costPerMonth').textContent = isRecurring ? formatCurrency(monthlyTotal) : '—';
+            document.getElementById('costPerYear').textContent = isRecurring ? formatCurrency(yearlyTotal) : '—';
+            document.getElementById('costPerPerson').textContent = formatCurrency(costPerPerson);
+
+            let breakdownHTML = `<div class="breakdown-card"><div class="breakdown-info"><h4>Direkte Gehaltskosten</h4><p>Die reine Zeit deines Teams</p></div><div class="breakdown-value">${formatCurrency(baseLaborCost)}</div></div>`;
+            if (lateStartCost > 0) breakdownHTML += `<div class="breakdown-card highlight-red"><div class="breakdown-info"><h4 style="color: var(--playful-red);">Wartezeit durch Verspätung</h4><p>${lateMinutes} Min × ${participants} Personen</p></div><div class="breakdown-value negative">+${formatCurrency(lateStartCost)}</div></div>`;
+            if (hiddenInefficiency > 0) breakdownHTML += `<div class="breakdown-card highlight-red"><div class="breakdown-info"><h4 style="color: var(--playful-red);">Versteckte Ineffizienz</h4><p>Produktivitätsfresser & Setup-Mängel</p></div><div class="breakdown-value negative">+${formatCurrency(hiddenInefficiency)}</div></div>`;
+            breakdownHTML += `<div class="breakdown-card highlight-purple"><div class="breakdown-info"><h4 style="color: var(--playful-purple);">Deep Work Recovery</h4><p>Wiederfokuszeit: 23 Min. pro Kopf (UC Irvine)</p></div><div class="breakdown-value purple">+${formatCurrency(contextSwitchCost)}</div></div>`;
+            document.getElementById('breakdownCards').innerHTML = breakdownHTML;
+
+            const factorsSection = document.getElementById('factorsSection');
+            const factorItems = document.getElementById('factorItems');
+            if (factors.length > 0) {
+                factorsSection.style.display = 'block';
+                factorItems.innerHTML = factors.map(f => `<div class="factor-item"><span class="factor-icon">${f.icon}</span><div class="factor-info"><div class="factor-name">${f.name}</div><div class="factor-desc">${f.desc}</div></div><span class="factor-percent">+${f.percent}%</span></div>`).join('');
+            } else {
+                factorsSection.style.display = 'block';
+                factorItems.innerHTML = `<div class="factors-empty"><h4>Vorbildlich!</h4><p>Keine offensichtlichen Ineffizienzen gefunden. Respekt!</p></div>`;
+            }
+
+            const tipsSection = document.getElementById('tipsSection');
+            const tipsGrid = document.getElementById('tipsGrid');
+            if (tips.length > 0) {
+                tipsSection.style.display = 'block';
+                tipsGrid.innerHTML = tips.map(t => `<div class="tip-item"><span class="tip-icon">${t.icon}</span><div class="tip-content"><h4>${t.title}</h4><p>${t.text}</p></div></div>`).join('');
+            } else { tipsSection.style.display = 'none'; }
+
+            const assumptions = [
+                `Stundensatz: ${hourlyRate} €/h (Brutto inkl. Lohnnebenkosten)`,
+                'Kontextwechsel: 23 Min. pro Person (UC Irvine)',
+                'Ringelmann-Effekt: Ab 6 Personen -2.5% pro Kopf',
+                'Hidden Cost Multiplier: Max. 150%',
+                isRecurring ? `Häufigkeit: ${frequency}× pro Monat` : 'Einmaliges Meeting'
+            ];
+            document.getElementById('assumptionsList').textContent = assumptions.join(' · ');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+        }
+
+        function triggerAiAudit() {
+            const btn = document.getElementById('aiAuditBtn');
+            const result = document.getElementById('aiResult');
+            const content = document.getElementById('aiResultContent');
+
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Analysiere...`;
+
+            setTimeout(() => {
+                const d = calculationData;
+                let feedback = '';
+                
+                if (d.isOneToMany) feedback += `<p><strong>🎤 One-to-Many erkannt:</strong> Bei Präsentationen vor großem Publikum empfehlen wir: Aufzeichnen, asynchron teilen, Live-Zeit für Q&A nutzen. Das reduziert Stress (Social Facilitation) und ermöglicht individuelle Wiedergabegeschwindigkeit.</p>`;
+                if (d.selectedFactors.includes('couldBeEmail')) feedback += `<p><strong>🚨 Kritisch:</strong> Du hast selbst erkannt, dass dieses Meeting eine E-Mail hätte sein können. Das ist der größte Hebel – eliminiere solche Meetings konsequent.</p>`;
+                if (d.participants >= 10) feedback += `<p><strong>👥 Teilnehmerzahl:</strong> Mit ${d.participantsDisplay} Personen ist dieses Meeting deutlich zu groß. Social Loafing reduziert die Produktivität erheblich. Versuche unter 6 zu bleiben.</p>`;
+                if (d.duration >= 90) feedback += `<p><strong>⏱ Dauer:</strong> ${d.durationDisplay} Minuten sind sehr lang. Das Gehirn braucht spätestens nach 90 Min eine Pause. Bei Remote sogar früher – Zoom Fatigue setzt bereits nach 30 Min ein.</p>`;
+                if (d.selectedFactors.includes('statusMeeting')) feedback += `<p><strong>📊 Status-Meeting:</strong> Reine Status-Updates sind prädestiniert für asynchrone Kommunikation. Probiere wöchentliche Slack-Updates oder ein geteiltes Notion-Doc.</p>`;
+                if (!feedback) feedback = `<p>Nicht schlecht! Dein Meeting-Setup ist solide. Kleine Optimierungen: Prüfe, ob wirklich alle Teilnehmer notwendig sind und ob die Dauer noch reduzierbar ist.</p>`;
+                feedback += `<p style="margin-top:16px;opacity:0.8;font-size:0.9rem;">💡 <strong>Prosma-Tipp:</strong> Etabliere einen "Meeting-freien Tag" pro Woche – das steigert die Deep-Work-Zeit signifikant.</p>`;
+
+                content.innerHTML = feedback;
+                result.classList.add('visible');
+                btn.style.display = 'none';
+            }, 2000);
+        }
+
+        function submitLead(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            console.log('Lead:', { email, ...calculationData });
+            alert(`Danke! Wir senden dein Ergebnis an ${email}.`);
+        }
+
+        function restartCalculator() {
+            selectedFactors.clear();
+            isOneToMany = false;
+            document.querySelectorAll('.toggle-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('emailCard').classList.remove('selected');
+            const onetomanyCard = document.getElementById('onetomanyCard');
+            if (onetomanyCard) onetomanyCard.classList.remove('selected', 'visible');
+            document.getElementById('participants').value = 6;
+            document.getElementById('participantsValue').textContent = '6 Personen';
+            document.getElementById('duration').value = 60;
+            document.getElementById('durationValue').textContent = '60 Minuten';
+            document.getElementById('hourlyRate').value = 65;
+            document.getElementById('hourlyRateSlider').value = 65;
+            document.getElementById('frequency').value = 1;
+            document.getElementById('frequencySlider').value = 1;
+            document.getElementById('isRecurring').checked = false;
+            document.getElementById('frequencyControls').classList.remove('visible');
+            document.getElementById('overtimeMinutes').value = 10;
+            document.getElementById('overtimeMinutesDisplay').textContent = '10 Min';
+            document.getElementById('lateMinutes').value = 10;
+            document.getElementById('lateMinutesDisplay').textContent = '10 Min';
+            document.getElementById('ringelmannHint').classList.remove('visible', 'expanded');
+            document.getElementById('durationHint').classList.remove('visible', 'expanded');
+            const sfHint = document.getElementById('socialFacilitationHint');
+            if (sfHint) sfHint.classList.remove('visible', 'expanded');
+            const zfHint = document.getElementById('zoomFatigueHint');
+            if (zfHint) zfHint.classList.remove('visible', 'expanded');
+            const lmHint = document.getElementById('longMeetingHint');
+            if (lmHint) lmHint.classList.remove('visible', 'expanded');
+            document.getElementById('overtimeField').classList.remove('visible');
+            document.getElementById('lateField').classList.remove('visible');
+            document.getElementById('aiResult').classList.remove('visible');
+            const btn = document.getElementById('aiAuditBtn');
+            btn.style.display = 'inline-flex';
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-1v4a4 4 0 0 1-8 0v-4H7a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3V6a4 4 0 0 1 4-4z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg> Prosma AI Audit starten`;
+            updateStopwatch(60);
+            document.getElementById('progressContainer').classList.add('visible');
+            goToStep(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
